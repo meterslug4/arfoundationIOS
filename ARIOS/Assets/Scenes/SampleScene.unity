@@ -589,6 +589,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   addCameraPath: {fileID: 186389033}
   saveBtn: {fileID: 1309637835}
+  cube: {fileID: 1811040176534519211, guid: d261b5dd3034a454fa14004270414c38, type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

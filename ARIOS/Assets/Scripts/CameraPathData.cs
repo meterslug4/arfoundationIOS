@@ -11,6 +11,7 @@ public class CameraPathData : MonoBehaviour
     protected XROrigin xrOrigin;
     public Button addCameraPath;
     public Button saveBtn;
+    public GameObject cube;
     protected List<Vector3> cameraPathList = new List<Vector3>();
     protected float cameraHeight;
     private void Awake()
@@ -29,7 +30,7 @@ public class CameraPathData : MonoBehaviour
     }
     protected GameObject CreatePathObj(Vector3 pos)
     {
-        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        GameObject obj = Instantiate(cube, pos, Quaternion.identity);
         obj.transform.position = pos;
         return obj;
     }
