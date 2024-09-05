@@ -16,7 +16,7 @@ public class CameraPathData : MonoBehaviour
     protected float cameraHeight;
     private void Awake()
     {
-        cameraHeight = 1.0f;
+        cameraHeight = 0.0f;
         mainCamera = Camera.main;
         addCameraPath.onClick.AddListener(OnClickedAddCameraPath);
         saveBtn.onClick.AddListener(OnClickedSaveCameraPathListToJSON);
