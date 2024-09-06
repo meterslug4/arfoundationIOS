@@ -72,16 +72,29 @@ public class NodeEditWindow : EditorWindow
     {
         try
         {
+            //if(!string.IsNullOrEmpty(jsonFilePath))
+            //{
+            //    string json = Utils.LoadJsonFile(jsonFilePath);
+            //    var obj = JsonConvert.DeserializeObject<ItemListWrapper>(json);
+            //    itemList = obj.items;
+            //    if(itemList.Count >0)
+            //    {
+            //        for(int i=0; i<itemList.Count; i++)
+            //        {
+            //            CreateNode(itemList[i].pos);
+            //        }
+            //    }
+            //}
             if(!string.IsNullOrEmpty(jsonFilePath))
             {
                 string json = Utils.LoadJsonFile(jsonFilePath);
-                var obj = JsonConvert.DeserializeObject<ItemListWrapper>(json);
-                itemList = obj.items;
-                if(itemList.Count >0)
+                var obj = JsonConvert.DeserializeObject<Vector3List>(json);
+                List<Vector3Serialize> list = obj.vectors;
+                if(list.Count >0)
                 {
-                    for(int i=0; i<itemList.Count; i++)
+                    for(int i=0; i<list.Count; i++)
                     {
-                        CreateNode(itemList[i].pos);
+                        CreateNode(list[i].GetVector3());
                     }
                 }
             }

@@ -57,3 +57,12 @@ public class ItemListWrapper
         items = itemList;
     }
 }
+public static class CONST
+{
+    public const string NOT = "Nothing";
+    public const string YOON = "Yoon";
+    public const string JEON = "Jeon";
+    public const string CONFERENCE1 = "Conference_Big";
+    public const string EXIT = "Exit";
+    public const string CONFERENCE2 = "Conference_Small";
+}

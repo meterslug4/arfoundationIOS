@@ -7,22 +7,19 @@ using UnityEngine.UI;
 
 public class UserObj : MonoBehaviour
 {
-    public GameObject destMsg;
-    [SerializeField]protected OfficeDemo officeDemo;
+    [SerializeField]protected Demo officeDemo;
     public ShowDirection showDirection;//화살표 표시용 오브젝트
     [SerializeField]protected Node currentNode;//현재 user가 있는 노드
     [SerializeField]protected Node nextNode; //다음으로 가야할 노드(최종 목적지X)
     protected List<Node> closeList = new List<Node>();//이미 방문한 노드 리스트
     protected Vector3 nextDir;//다음 노드의 방향
     protected bool isFinish = false;//최종 목적지에 도착했는지
-
     protected Queue<Node> desQue = new Queue<Node>();
     protected bool isNewdestList = false;//새 경로가 설정됬는지?
     protected bool searching = false;//탐색중인지?
 
     void Start()
     {
-        destMsg.SetActive(false);
         officeDemo.delSetPath = SetNewPath;
     }
     private void Update()
@@ -55,7 +52,6 @@ public class UserObj : MonoBehaviour
         isNewdestList = false;
         showDirection.setdest = false;//설정된 목적지 없으므로 false로 변경
         showDirection.EnableArrow(false);
-        destMsg.SetActive(true);
         closeList.Clear();
         //yield return null;
     }
