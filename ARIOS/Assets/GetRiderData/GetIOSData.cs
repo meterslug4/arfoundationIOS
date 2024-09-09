@@ -6,8 +6,7 @@ using System.IO;
 using UnityEngine.UI;
 using UnityEngine.XR.ARSubsystems;
 using Unity.Collections;
-using Unity.VisualScripting;
-using static UnityEditor.PlayerSettings;
+
 
 public class GetIOSData : MonoBehaviour
 {
