@@ -5,6 +5,9 @@ using UnityEngine.XR.ARFoundation;
 using System.IO;
 using UnityEngine.UI;
 using UnityEngine.XR.ARSubsystems;
+using Unity.Collections;
+using Unity.VisualScripting;
+using static UnityEditor.PlayerSettings;
 
 public class GetIOSData : MonoBehaviour
 {
@@ -12,7 +15,7 @@ public class GetIOSData : MonoBehaviour
     protected int saveFileCnt = 0;
     protected List<Vector3> pcdList = new List<Vector3>();//point cloud position
     protected List<Color> colorList = new List<Color>();
-    protected int idx = 0;
+    //protected int idx = 0;
     protected int listCnt = 200000;
     protected string saveFilePath;
     protected string saveColorPath;
@@ -43,7 +46,7 @@ public class GetIOSData : MonoBehaviour
     }
     private void Update()
     {
-        AddCameraPositions();
+        //AddCameraPositions();
     }
     private void OnEnable()
     {
@@ -55,34 +58,27 @@ public class GetIOSData : MonoBehaviour
     }
     void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
-        // 현재 프레임의 텍스처 정보를 가져옵니다.
-        if (arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+        if (!arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
         {
-            // 카메라 이미지의 해상도를 가져옵니다.
-            var cameraResolution = new Vector2(image.width, image.height);
-
-            // 새로운 텍스처를 해상도에 맞게 생성
-            if (cameraTexture == null || cameraTexture.width != image.width || cameraTexture.height != image.height)
-            {
-                cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGBA32, false);
-            }
-
-            // 카메라 이미지 데이터를 텍스처에 복사
-            var conversionParams = new XRCpuImage.ConversionParams
-            {
-                inputRect = new RectInt(0, 0, image.width, image.height),
-                outputDimensions = new Vector2Int(image.width, image.height),
-                outputFormat = TextureFormat.RGBA32,
-                transformation = XRCpuImage.Transformation.None
-            };
-
-            var rawTextureData = cameraTexture.GetRawTextureData<byte>();
-            image.Convert(conversionParams, rawTextureData);
-            cameraTexture.Apply();
-
-            // 이미지 사용 후 반드시 Dispose 호출
-            image.Dispose();
+            return;
         }
+
+        // 카메라 이미지를 처리하는 코드
+        // XRCpuImage를 Texture2D로 변환하여 사용 가능
+        var conversionParams = new XRCpuImage.ConversionParams
+        {
+            inputRect = new RectInt(0, 0, image.width, image.height),
+            outputDimensions = new Vector2Int(image.width, image.height),
+            outputFormat = TextureFormat.RGBA32,
+            transformation = XRCpuImage.Transformation.None
+        };
+
+        cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGBA32, false);
+        var rawTextureData = cameraTexture.GetRawTextureData<byte>();
+        image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
+        cameraTexture.Apply();
+
+        image.Dispose();
     }
     protected void AddCameraPositions()
     {
@@ -100,14 +96,29 @@ public class GetIOSData : MonoBehaviour
     {
         if(isSave)
         {
-            foreach(ARPointCloud pointClod in args.added)
+            foreach(ARPointCloud pointCloud in args.added)
             {
-                if(pointClod.positions.HasValue)
+                if(pointCloud.positions.HasValue)
                 {
-                    pcdList.AddRange(pointClod.positions.Value);
-                    Vector3 pos = pcdList[idx];
-                    Color color = GetColorAtWorldPosition(pos);
-                    colorList.Add(color);
+                    pcdList.AddRange(pointCloud.positions.Value);
+                    cameraPath.Add(arCam.transform.position);
+                    for (int i=0; i<pcdList.Count; i++)
+                    {
+                        Vector3 screenPoint = arCam.WorldToScreenPoint(pcdList[i]);
+                        int pixelX = (int)screenPoint.x;
+                        int pixelY = (int)screenPoint.y;
+
+                        if (pixelX >= 0 && pixelX < cameraTexture.width && pixelY >= 0 && pixelY < cameraTexture.height)
+                        {
+                            Color pointColor = cameraTexture.GetPixel(pixelX, pixelY);  // 해당 2D 좌표의 색상 정보 추출
+                            colorList.Add(pointColor);
+                        }
+                        else
+                        {
+                            Color pointColor = Color.black;
+                            colorList.Add(pointColor);
+                        }
+                    }
                 }
             }
 
@@ -116,27 +127,29 @@ public class GetIOSData : MonoBehaviour
                 if (pointCloud.positions.HasValue)
                 {
                     pcdList.AddRange(pointCloud.positions.Value);
-                    Vector3 pos = pcdList[idx];
-                    Color color = GetColorAtWorldPosition(pos);
-                    colorList.Add(color);
+                    cameraPath.Add(arCam.transform.position);
+                    for (int i = 0; i < pcdList.Count; i++)
+                    {
+                        Vector3 screenPoint = arCam.WorldToScreenPoint(pcdList[i]);
+                        int pixelX = (int)screenPoint.x;
+                        int pixelY = (int)screenPoint.y;
+
+                        if (pixelX >= 0 && pixelX < cameraTexture.width && pixelY >= 0 && pixelY < cameraTexture.height)
+                        {
+                            Color pointColor = cameraTexture.GetPixel(pixelX, pixelY);  // 해당 2D 좌표의 색상 정보 추출
+                            colorList.Add(pointColor);
+                        }
+                        else
+                        {
+                            Color pointColor = Color.black;
+                            colorList.Add(pointColor);
+                        }
+                    }
                 }
             }
+
             UpdatePCDFile();
         }
-    }
-    public Color GetColorAtWorldPosition(Vector3 worldPosition)
-    {
-        Vector2 uv = GetUVFromWorldPosition(worldPosition);
-        int x = Mathf.FloorToInt(uv.x * cameraTexture.width);
-        int y = Mathf.FloorToInt(uv.y * cameraTexture.height);
-
-        return cameraTexture.GetPixel(x, y);
-    }
-    // 3D 포인트 클라우드 위치를 2D 카메라 좌표로 변환
-    protected Vector2 GetUVFromWorldPosition(Vector3 worldPosition)
-    {
-        Vector3 screenPos = arCam.WorldToScreenPoint(worldPosition);
-        return new Vector2(screenPos.x / Screen.width, screenPos.y / Screen.height);
     }
     protected void UpdatePCDFile()
     {
@@ -145,7 +158,8 @@ public class GetIOSData : MonoBehaviour
             SavePCDToBIN(); //바이너리로 저장후
             saveFileCnt += 1;//파일카운드 1증가
             pcdList.Clear();//리스트 초기화
-            idx = 0;
+            colorList.Clear();
+            cameraPath.Clear();
         }
     }
     protected void SavePCDToBIN()
