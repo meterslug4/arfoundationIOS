@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using System.IO;
 using UnityEngine.UI;
-using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 public class GetIOSData : MonoBehaviour
@@ -12,10 +11,11 @@ public class GetIOSData : MonoBehaviour
     public ARPointCloudManager pcdManager; //ARFoundation Point cloud Manager
     protected int saveFileCnt = 0;
     protected List<Vector3> pcdList = new List<Vector3>();//point cloud position
-    protected List<IOSData> dataList = new List<IOSData>(); //point cloud position, Color
+    protected List<Color> colorList = new List<Color>();
     protected int idx = 0;
     protected int listCnt = 200000;
     protected string saveFilePath;
+    protected string saveColorPath;
 
     public ARCameraManager arCameraManager;
     public Camera arCam;
@@ -100,19 +100,28 @@ public class GetIOSData : MonoBehaviour
     {
         if(isSave)
         {
+            foreach(ARPointCloud pointClod in args.added)
+            {
+                if(pointClod.positions.HasValue)
+                {
+                    pcdList.AddRange(pointClod.positions.Value);
+                    Vector3 pos = pcdList[idx];
+                    Color color = GetColorAtWorldPosition(pos);
+                    colorList.Add(color);
+                }
+            }
+
             foreach(ARPointCloud pointCloud in args.updated)
             {
-                UpdatePCDFile();
                 if (pointCloud.positions.HasValue)
                 {
                     pcdList.AddRange(pointCloud.positions.Value);
                     Vector3 pos = pcdList[idx];
                     Color color = GetColorAtWorldPosition(pos);
-                    idx += 1;
-                    IOSData data = new IOSData(pos,color);
-                    dataList.Add(data);
+                    colorList.Add(color);
                 }
             }
+            UpdatePCDFile();
         }
     }
     public Color GetColorAtWorldPosition(Vector3 worldPosition)
@@ -136,7 +145,6 @@ public class GetIOSData : MonoBehaviour
             SavePCDToBIN(); //바이너리로 저장후
             saveFileCnt += 1;//파일카운드 1증가
             pcdList.Clear();//리스트 초기화
-            dataList.Clear();
             idx = 0;
         }
     }
@@ -147,24 +155,29 @@ public class GetIOSData : MonoBehaviour
         using (BinaryWriter writer = new BinaryWriter(File.Open(saveFilePath, FileMode.Create)))
         {
             // 포인트의 개수를 먼저 저장
-            //writer.Write(pcdList.Count);
-            writer.Write(dataList.Count);
+            writer.Write(pcdList.Count);
             // 각 포인트 좌표를 저장
-            //foreach (Vector3 point in pcdList)
-            //{
-            //    writer.Write(point.x);
-            //    writer.Write(point.y);
-            //    writer.Write(point.z);
-            //}
-            foreach(IOSData data in dataList)
+            foreach (Vector3 point in pcdList)
             {
-                writer.Write(data.pos.x);
-                writer.Write(data.pos.y);
-                writer.Write(data.pos.z);
+                writer.Write(point.x);
+                writer.Write(point.y);
+                writer.Write(point.z);
+            }
+        }
+        string colorFileName = string.Format("PCDColor{0}.bin", saveFileCnt);
+        saveColorPath = Path.Combine(Application.persistentDataPath, colorFileName);
+        using (BinaryWriter writer = new BinaryWriter(File.Open(saveColorPath, FileMode.Create)))
+        {
+            // Color 리스트의 개수를 저장
+            writer.Write(colorList.Count);
 
-                writer.Write(data.color.r);
-                writer.Write(data.color.g);
-                writer.Write(data.color.b);
+            // 각 Color의 r, g, b, a 값을 저장
+            foreach (Color color in colorList)
+            {
+                writer.Write(color.r);
+                writer.Write(color.g);
+                writer.Write(color.b);
+                writer.Write(color.a);
             }
         }
     }
@@ -178,26 +191,29 @@ public class GetIOSData : MonoBehaviour
             using (BinaryWriter writer = new BinaryWriter(File.Open(pcdSavePath, FileMode.Create)))
             {
                 // 포인트의 개수를 먼저 저장
-                //writer.Write(pcdList.Count);
-                writer.Write(dataList.Count);
+                writer.Write(pcdList.Count);
                 // 각 포인트 좌표를 저장
-                //foreach (Vector3 point in pcdList)
-                //{
-                //    writer.Write(point.x);
-                //    writer.Write(point.y);
-                //    writer.Write(point.z);
-                //}
-
-                foreach (IOSData data in dataList)
+                foreach (Vector3 point in pcdList)
                 {
-                    writer.Write(data.pos.x);
-                    writer.Write(data.pos.y);
-                    writer.Write(data.pos.z);
+                    writer.Write(point.x);
+                    writer.Write(point.y);
+                    writer.Write(point.z);
+                }
+            }
+            string colorFileName = "LastColor.bin";
+            string saveColorPath = Path.Combine(Application.persistentDataPath, colorFileName);
+            using (BinaryWriter writer = new BinaryWriter(File.Open(saveColorPath, FileMode.Create)))
+            {
+                // Color 리스트의 개수를 저장
+                writer.Write(colorList.Count);
 
-                    writer.Write(data.color.r);
-                    writer.Write(data.color.g);
-                    writer.Write(data.color.b);
-                    writer.Write(data.color.a);
+                // 각 Color의 r, g, b, a 값을 저장
+                foreach (Color color in colorList)
+                {
+                    writer.Write(color.r);
+                    writer.Write(color.g);
+                    writer.Write(color.b);
+                    writer.Write(color.a);
                 }
             }
 
@@ -217,16 +233,6 @@ public class GetIOSData : MonoBehaviour
                 }
             }
         }
-    }
-}
-public struct IOSData
-{
-    public Vector3 pos;
-    public Color color;
-    public IOSData(Vector3 p, Color c)
-    {
-        pos = p;
-        color = c;
     }
 }
 
