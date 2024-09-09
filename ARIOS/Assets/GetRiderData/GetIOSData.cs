@@ -26,6 +26,8 @@ public class GetIOSData : MonoBehaviour
     protected float saveTime = 0.0f;
     protected Texture2D cameraTexture;
 
+    protected int skip = 5;
+
 
     public Button saveBtn;//현재까지의 pcdList(20만개가 되지않아도 저장을함) cameraPosList까지 저장
     protected bool isSave = true;
@@ -57,6 +59,10 @@ public class GetIOSData : MonoBehaviour
     }
     void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
+        if(Time.frameCount % skip !=0)
+        {
+            return;
+        }
         if (!arCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
         {
             return;
@@ -93,6 +99,10 @@ public class GetIOSData : MonoBehaviour
     }
     protected void PointCloudsChanged(ARPointCloudChangedEventArgs args)
     {
+        if(Time.frameCount % skip != 0)
+        {
+            return;
+        }
         if(isSave)
         {
             foreach(ARPointCloud pointCloud in args.added)
@@ -106,13 +116,15 @@ public class GetIOSData : MonoBehaviour
                         Vector3 screenPoint = arCam.WorldToScreenPoint(pcdList[i]);
                         int pixelX = (int)screenPoint.x;
                         int pixelY = (int)screenPoint.y;
-
-                        if (pixelX >= 0 && pixelX < cameraTexture.width && pixelY >= 0 && pixelY < cameraTexture.height)
+                        try
                         {
-                            Color pointColor = cameraTexture.GetPixel(pixelX, pixelY);  // 해당 2D 좌표의 색상 정보 추출
-                            colorList.Add(pointColor);
+                            if (pixelX >= 0 && pixelX < cameraTexture.width && pixelY >= 0 && pixelY < cameraTexture.height)
+                            {
+                                Color pointColor = cameraTexture.GetPixel(pixelX, pixelY);  // 해당 2D 좌표의 색상 정보 추출
+                                colorList.Add(pointColor);
+                            }
                         }
-                        else
+                        catch(System.Exception e)
                         {
                             Color pointColor = Color.black;
                             colorList.Add(pointColor);
@@ -133,12 +145,15 @@ public class GetIOSData : MonoBehaviour
                         int pixelX = (int)screenPoint.x;
                         int pixelY = (int)screenPoint.y;
 
-                        if (pixelX >= 0 && pixelX < cameraTexture.width && pixelY >= 0 && pixelY < cameraTexture.height)
+                        try
                         {
-                            Color pointColor = cameraTexture.GetPixel(pixelX, pixelY);  // 해당 2D 좌표의 색상 정보 추출
-                            colorList.Add(pointColor);
+                            if (pixelX >= 0 && pixelX < cameraTexture.width && pixelY >= 0 && pixelY < cameraTexture.height)
+                            {
+                                Color pointColor = cameraTexture.GetPixel(pixelX, pixelY);  // 해당 2D 좌표의 색상 정보 추출
+                                colorList.Add(pointColor);
+                            }
                         }
-                        else
+                        catch (System.Exception e)
                         {
                             Color pointColor = Color.black;
                             colorList.Add(pointColor);
