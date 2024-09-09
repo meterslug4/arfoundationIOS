@@ -26,13 +26,14 @@ public class GetIOSData : MonoBehaviour
     protected float saveTime = 0.0f;
     protected Texture2D cameraTexture;
 
-    protected int skip = 5;
+    protected int skip;
 
 
     public Button saveBtn;//현재까지의 pcdList(20만개가 되지않아도 저장을함) cameraPosList까지 저장
     protected bool isSave = true;
     private void Awake()
     {
+        skip = 20;
         arCam = Camera.main;
         pcdManager = GameObject.FindObjectOfType<ARPointCloudManager>();
         if (pcdManager != null)
