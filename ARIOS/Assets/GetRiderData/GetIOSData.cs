@@ -26,14 +26,12 @@ public class GetIOSData : MonoBehaviour
     protected float saveTime = 0.0f;
     protected Texture2D cameraTexture;
 
-    protected int skip;
-
 
     public Button saveBtn;//현재까지의 pcdList(20만개가 되지않아도 저장을함) cameraPosList까지 저장
-    protected bool isSave = true;
+    protected bool isWork = false;
     private void Awake()
     {
-        skip = 20;
+        isWork = false;
         arCam = Camera.main;
         pcdManager = GameObject.FindObjectOfType<ARPointCloudManager>();
         if (pcdManager != null)
@@ -60,7 +58,7 @@ public class GetIOSData : MonoBehaviour
     }
     void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
-        if(Time.frameCount % skip !=0)
+        if(isWork == true)
         {
             return;
         }
@@ -68,7 +66,7 @@ public class GetIOSData : MonoBehaviour
         {
             return;
         }
-
+        isWork = true;
         // 카메라 이미지를 처리하는 코드
         // XRCpuImage를 Texture2D로 변환하여 사용 가능
         var conversionParams = new XRCpuImage.ConversionParams
@@ -78,34 +76,22 @@ public class GetIOSData : MonoBehaviour
             outputFormat = TextureFormat.RGBA32,
             transformation = XRCpuImage.Transformation.None
         };
-
-        cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGBA32, false);
+        if(cameraTexture ==null)
+        {
+            cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGBA32, false);
+        }
         var rawTextureData = cameraTexture.GetRawTextureData<byte>();
         image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
         cameraTexture.Apply();
 
         image.Dispose();
     }
-    protected void AddCameraPositions()
-    {
-        if(isSave)
-        {
-            saveTime += Time.deltaTime;
-            if(saveTime >= interval)
-            {
-                cameraPath.Add(arCam.transform.position);
-                saveTime = 0.0f;
-            }
-        }
-    }
     protected void PointCloudsChanged(ARPointCloudChangedEventArgs args)
     {
-        if(Time.frameCount % skip != 0)
+        if(isWork==false)
         {
             return;
         }
-        if(isSave)
-        {
             foreach(ARPointCloud pointCloud in args.added)
             {
                 if(pointCloud.positions.HasValue)
@@ -164,7 +150,7 @@ public class GetIOSData : MonoBehaviour
             }
 
             UpdatePCDFile();
-        }
+        isWork = false;
     }
     protected void UpdatePCDFile()
     {
@@ -212,9 +198,7 @@ public class GetIOSData : MonoBehaviour
     }
     protected void Save()
     {
-        if(isSave)
-        {
-            isSave = false;
+
             string pcdFileName = "LastPcd.bin";
             string pcdSavePath = Path.Combine(Application.persistentDataPath, pcdFileName);
             using (BinaryWriter writer = new BinaryWriter(File.Open(pcdSavePath, FileMode.Create)))
@@ -261,7 +245,7 @@ public class GetIOSData : MonoBehaviour
                     writer.Write(point.z);
                 }
             }
-        }
+        
     }
 }
 
