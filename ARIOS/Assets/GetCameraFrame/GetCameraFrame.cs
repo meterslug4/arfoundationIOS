@@ -130,7 +130,7 @@ public class GetCameraFrame : MonoBehaviour
                 }
             }
             cameraTexture.Apply();
-
+            camFrame.texture = cameraTexture;
         }
     }
 }
