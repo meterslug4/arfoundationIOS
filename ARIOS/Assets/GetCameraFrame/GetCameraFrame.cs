@@ -27,7 +27,14 @@ public class GetCameraFrame : MonoBehaviour
             arCamera = Camera.main;
         }
         cameraManager = GetComponent<ARCameraManager>();
-        CreateRenderTexture();
+        try
+        {
+            CreateRenderTexture();
+        }
+        catch(System.Exception e)
+        {
+            errorTxt.text = e.Message;
+        }
         captureBtn.onClick.AddListener(OnClickCaptureFrame);
     }
     //Render Texture »ý¼º 
@@ -89,6 +96,7 @@ public class GetCameraFrame : MonoBehaviour
         screenW = Screen.width;
         screenH = Screen.height;
         info = string.Format("W:{0} H:{1}", screenW, screenH);
+        imgSizeTxt.text = info;
     }
     private void OnDestroy()
     {
