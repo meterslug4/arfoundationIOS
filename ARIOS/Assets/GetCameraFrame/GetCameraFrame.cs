@@ -15,7 +15,7 @@ public class GetCameraFrame : MonoBehaviour
     public TMP_Text imgSizeTxt;
     public TMP_Text errorTxt;
     public RenderTexture rt;
-    protected Texture2D copyTexture2D;
+    protected Texture2D cameraTexture;
     protected int screenW;
     protected int screenH;
     string info = string.Empty;
@@ -26,51 +26,49 @@ public class GetCameraFrame : MonoBehaviour
         {
             arCamera = Camera.main;
         }
-        cameraManager = GetComponent<ARCameraManager>();
+        if(cameraManager == null)
+        {
+            cameraManager = GetComponent<ARCameraManager>();
+        }
+        cameraManager.frameReceived += OnReceivedCameraFrame;
+        captureBtn.onClick.AddListener(OnClickCaptureFrame);
+    }
+    void OnReceivedCameraFrame(ARCameraFrameEventArgs args)
+    {
         try
         {
-            CreateRenderTexture();
+            if(cameraManager != null)
+            {
+                if(cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+                {
+                    info = string.Format("W:{0} H:{1}", image.width, image.height);
+                    imgSizeTxt.text = info;
+                    var conversionParams = new XRCpuImage.ConversionParams
+                    {
+                        inputRect = new RectInt(0,0,image.width,image.height),
+                        outputDimensions = new Vector2Int(image.width,image.height),
+                        outputFormat = TextureFormat.RGB24,
+                        transformation = XRCpuImage.Transformation.None
+                    };
+                    if(cameraTexture == null)
+                    {
+                        cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGB24, false);
+                    }
+                    var rawTextureData = cameraTexture.GetRawTextureData<byte>();
+                    image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
+                    cameraTexture.Apply();
+                    camFrame.texture = cameraTexture;
+                    image.Dispose();
+                }
+            }
         }
         catch(System.Exception e)
         {
             errorTxt.text = e.Message;
         }
-        captureBtn.onClick.AddListener(OnClickCaptureFrame);
-    }
-    //Render Texture 생성 
-    protected void CreateRenderTexture()
-    {
-        CheckScreenSize();
-        if(rt != null)
-        {
-            rt.Release();
-            Destroy(rt);
-        }
-        rt = new RenderTexture(screenW, screenH,24);
-        rt.Create();
-        
-        arCamera.targetTexture = rt;
-        //camFrame 할당 X 
     }
     protected void OnClickCaptureFrame()
     {
-        GetTexturePiexel();
-        ChangePixelColor(copyTexture2D);
-        captureImg.texture = copyTexture2D;// renderTexture에서 읽어온것을 capture texture 로 
-    }
-    protected void GetTexturePiexel()
-    {
-        if(camFrame == null)
-        {
-            return;
-        }
-        RenderTexture.active = rt;
-        if (copyTexture2D == null)
-        {
-            copyTexture2D = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false);
-        }
-        copyTexture2D.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-        copyTexture2D.Apply();//render texture를 texutre 2d로 변환 
     }
     protected void ChangePixelColor(Texture2D texture)
     {
