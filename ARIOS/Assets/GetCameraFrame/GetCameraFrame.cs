@@ -57,7 +57,7 @@ public class GetCameraFrame : MonoBehaviour
                     var rawTextureData = cameraTexture.GetRawTextureData<byte>();
                     image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
                     cameraTexture.Apply();
-                    camFrame.texture = cameraTexture;
+                    captureImg.texture = cameraTexture;
                     image.Dispose();
                 }
             }
