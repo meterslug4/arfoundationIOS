@@ -1,7 +1,7 @@
-using System.Collections;
-using System.Transactions;
+using System;
 using TMPro;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
@@ -25,11 +25,11 @@ public class GetCameraFrame : MonoBehaviour
     //아이패드 screen 해상도 2388, 1688
     void Start()
     {
-        if(arCamera == null)
+        if (arCamera == null)
         {
             arCamera = Camera.main;
         }
-        if(cameraManager == null)
+        if (cameraManager == null)
         {
             cameraManager = GetComponent<ARCameraManager>();
         }
@@ -39,44 +39,59 @@ public class GetCameraFrame : MonoBehaviour
         cameraManager.frameReceived += OnReceivedCameraFrame;
         captureBtn.onClick.AddListener(OnClickCaptureFrame);
     }
-    void OnReceivedCameraFrame(ARCameraFrameEventArgs args)
+    unsafe void OnReceivedCameraFrame(ARCameraFrameEventArgs args)
     {
         try
         {
-            if(cameraManager != null)
+            if (cameraManager != null)
             {
-                if(cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+                if (!cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
                 {
-                    if(first)
-                    {
-                        first = false;
-                        info += string.Format("imgW:{0} imgH:{1}", image.width, image.height);
-                    }
-                    imgSizeTxt.text = info;
-                    using(image)
-                    {
-                        var conversionParams = new XRCpuImage.ConversionParams
-                        {
-                            inputRect = new RectInt(0,0,image.width,image.height),
-                            outputDimensions = new Vector2Int(image.width,image.height),
-                            outputFormat = TextureFormat.RGBA32,
-                            transformation = XRCpuImage.Transformation.None
-                        };
-                        if(cameraTexture == null)
-                        {
-                            cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGBA32, false);
-                        }
-                        var rawTextureData = cameraTexture.GetRawTextureData<byte>();
-                        image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
-                        cameraTexture.Apply();
-                        captureImg.rectTransform.sizeDelta = new Vector2(image.width, image.height);
-                        captureImg.rectTransform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-                        captureImg.texture = cameraTexture;
-                    }
+                    return;
                 }
+                if (first)
+                {
+                    first = false;
+                    info += string.Format("imgW:{0} imgH:{1}", image.width, image.height);
+                }
+                imgSizeTxt.text = info;
+
+                var conversionParams = new XRCpuImage.ConversionParams
+                {
+                    inputRect = new RectInt(0, 0, image.width, image.height),
+                    outputDimensions = new Vector2Int(image.width / 2, image.height / 2),
+                    outputFormat = TextureFormat.RGB24,
+                    transformation = XRCpuImage.Transformation.None
+                };
+
+
+                int size = image.GetConvertedDataSize(conversionParams);
+                var buffer = new NativeArray<byte>(size, Allocator.Temp);
+                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+                //var rawTextureData = cameraTexture.GetRawTextureData<byte>();
+                //image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
+                cameraTexture.Apply();
+                captureImg.rectTransform.sizeDelta =
+                    new Vector2(conversionParams.outputDimensions.x, conversionParams.outputDimensions.y);
+                captureImg.rectTransform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                captureImg.texture = cameraTexture;
+                image.Dispose();
+
+                if (cameraTexture == null)
+                {
+                    cameraTexture = new Texture2D
+                            (
+                            conversionParams.outputDimensions.x,
+                            conversionParams.outputDimensions.y,
+                            conversionParams.outputFormat,
+                            false
+                            );
+                }
+                cameraTexture.LoadRawTextureData(buffer);
+                buffer.Dispose();
             }
         }
-        catch(System.Exception e)
+        catch (System.Exception e)
         {
             errorTxt.text = e.Message;
         }
@@ -86,20 +101,20 @@ public class GetCameraFrame : MonoBehaviour
     }
     protected void ChangePixelColor(Texture2D texture)
     {
-        if(texture == null)
+        if (texture == null)
         {
             return;
         }
-        for(int x =0; x<100; x++)
+        for (int x = 0; x < 100; x++)
         {
-            for(int y=0; y<100; y++)
+            for (int y = 0; y < 100; y++)
             {
                 texture.SetPixel(x, y, Color.black);
             }
         }
         texture.Apply();
     }
-    protected void GetPixelColor(Texture2D targetTexture,int x,int y)
+    protected void GetPixelColor(Texture2D targetTexture, int x, int y)
     {
 
     }
