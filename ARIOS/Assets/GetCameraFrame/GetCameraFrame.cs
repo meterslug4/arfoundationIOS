@@ -14,12 +14,14 @@ public class GetCameraFrame : MonoBehaviour
     public ARCameraManager cameraManager;
     public TMP_Text imgSizeTxt;
     public TMP_Text errorTxt;
-    public RenderTexture rt;
     protected Texture2D cameraTexture;
     protected int screenW;
     protected int screenH;
     string info = string.Empty;
     public Button captureBtn;
+    public Canvas uiCanvas;
+    bool first = true;
+    //아이패드 screen 해상도 2388, 1688
     void Start()
     {
         if(arCamera == null)
@@ -30,6 +32,9 @@ public class GetCameraFrame : MonoBehaviour
         {
             cameraManager = GetComponent<ARCameraManager>();
         }
+        CheckScreenSize();
+        CanvasScaler cs = uiCanvas.GetComponent<CanvasScaler>();
+        //cs.uiScaleMode = ScaleMode.
         cameraManager.frameReceived += OnReceivedCameraFrame;
         captureBtn.onClick.AddListener(OnClickCaptureFrame);
     }
@@ -41,7 +46,11 @@ public class GetCameraFrame : MonoBehaviour
             {
                 if(cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
                 {
-                    info = string.Format("W:{0} H:{1}", image.width, image.height);
+                    if(first)
+                    {
+                        first = false;
+                        info += string.Format("imgW:{0} imgH:{1}", image.width, image.height);
+                    }
                     imgSizeTxt.text = info;
                     var conversionParams = new XRCpuImage.ConversionParams
                     {
@@ -57,8 +66,9 @@ public class GetCameraFrame : MonoBehaviour
                     var rawTextureData = cameraTexture.GetRawTextureData<byte>();
                     image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
                     cameraTexture.Apply();
+                    captureImg.rectTransform.sizeDelta = new Vector2(image.width, image.height);
+                    captureImg.rectTransform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
                     captureImg.texture = cameraTexture;
-                    image.Dispose();
                 }
             }
         }
@@ -93,15 +103,6 @@ public class GetCameraFrame : MonoBehaviour
     {
         screenW = Screen.width;
         screenH = Screen.height;
-        info = string.Format("W:{0} H:{1}", screenW, screenH);
-        imgSizeTxt.text = info;
-    }
-    private void OnDestroy()
-    {
-        if (rt != null)
-        {
-            rt.Release();
-            Destroy(rt);
-        }
+        info = string.Format("SW:{0} SH:{1}\n", screenW, screenH);
     }
 }
