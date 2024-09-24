@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Transactions;
 using TMPro;
 using Unity.Collections;
 using UnityEngine;
@@ -52,23 +53,26 @@ public class GetCameraFrame : MonoBehaviour
                         info += string.Format("imgW:{0} imgH:{1}", image.width, image.height);
                     }
                     imgSizeTxt.text = info;
-                    var conversionParams = new XRCpuImage.ConversionParams
+                    using(image)
                     {
-                        inputRect = new RectInt(0,0,image.width,image.height),
-                        outputDimensions = new Vector2Int(image.width,image.height),
-                        outputFormat = TextureFormat.RGB24,
-                        transformation = XRCpuImage.Transformation.None
-                    };
-                    if(cameraTexture == null)
-                    {
-                        cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGB24, false);
+                        var conversionParams = new XRCpuImage.ConversionParams
+                        {
+                            inputRect = new RectInt(0,0,image.width,image.height),
+                            outputDimensions = new Vector2Int(image.width,image.height),
+                            outputFormat = TextureFormat.RGBA32,
+                            transformation = XRCpuImage.Transformation.None
+                        };
+                        if(cameraTexture == null)
+                        {
+                            cameraTexture = new Texture2D(image.width, image.height, TextureFormat.RGBA32, false);
+                        }
+                        var rawTextureData = cameraTexture.GetRawTextureData<byte>();
+                        image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
+                        cameraTexture.Apply();
+                        captureImg.rectTransform.sizeDelta = new Vector2(image.width, image.height);
+                        captureImg.rectTransform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                        captureImg.texture = cameraTexture;
                     }
-                    var rawTextureData = cameraTexture.GetRawTextureData<byte>();
-                    image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
-                    cameraTexture.Apply();
-                    captureImg.rectTransform.sizeDelta = new Vector2(image.width, image.height);
-                    captureImg.rectTransform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-                    captureImg.texture = cameraTexture;
                 }
             }
         }
