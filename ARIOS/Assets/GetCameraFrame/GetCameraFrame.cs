@@ -70,7 +70,7 @@ public class GetCameraFrame : MonoBehaviour
                 image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
                 //var rawTextureData = cameraTexture.GetRawTextureData<byte>();
                 //image.Convert(conversionParams, new NativeArray<byte>(rawTextureData, Allocator.Temp));
-                cameraTexture.Apply();
+                
                 captureImg.rectTransform.sizeDelta =
                     new Vector2(conversionParams.outputDimensions.x, conversionParams.outputDimensions.y);
                 captureImg.rectTransform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
@@ -88,6 +88,7 @@ public class GetCameraFrame : MonoBehaviour
                             );
                 }
                 cameraTexture.LoadRawTextureData(buffer);
+                cameraTexture.Apply();
                 buffer.Dispose();
             }
         }
