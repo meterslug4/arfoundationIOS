@@ -140,20 +140,21 @@ public class GetCameraFrame : MonoBehaviour
                         int y = (int)screenPos.y;
                         if(cameraTexture == null)
                         {
-                            Color pcdColor = Color.black;
+                            Color pcdColor = Color.magenta;
                             colorList.Add(pcdColor);
                         }
                         else
                         {
-                            if (x >= 0 && x<cameraTexture.width
-                                &&  y>=0 && y<cameraTexture.height)
+                            var pos = ChangeScreenPosionToTexturePos(x, y, cameraTexture);
+                            if (pos.Item1 >= 0 && pos.Item1 < cameraTexture.width
+                                && pos.Item2 >= 0 && pos.Item2 < cameraTexture.height)
                             {
-                                Color pcdColor = cameraTexture.GetPixel(x, y);
+                                Color pcdColor = cameraTexture.GetPixel(pos.Item1, pos.Item2);
                                 colorList.Add(pcdColor);
                             }
                             else
                             {
-                                Color pcdColor = Color.black;
+                                Color pcdColor = Color.magenta;
                                 colorList.Add(pcdColor);
                             }
                         }
@@ -175,20 +176,21 @@ public class GetCameraFrame : MonoBehaviour
                         int y = (int)screenPos.y;
                         if(cameraTexture == null)
                         {
-                            Color pcdColor = Color.black;
+                            Color pcdColor = Color.magenta;
                             colorList.Add(pcdColor);
                         }
                         else
                         {
-                            if(x >=0 && x<cameraTexture.width &&
-                                y>=0 && y< cameraTexture.height)
+                            var pos = ChangeScreenPosionToTexturePos(x, y, cameraTexture);
+                            if (pos.Item1 >= 0 && pos.Item1 < cameraTexture.width
+                                && pos.Item2 >= 0 && pos.Item2 < cameraTexture.height)
                             {
-                                Color pcdColor = cameraTexture.GetPixel(x, y);
+                                Color pcdColor = cameraTexture.GetPixel(pos.Item1, pos.Item2);
                                 colorList.Add(pcdColor);
                             }
                             else
                             {
-                                Color pcdColor = Color.black;
+                                Color pcdColor = Color.magenta;
                                 colorList.Add(pcdColor);
                             }
                         }
@@ -198,6 +200,17 @@ public class GetCameraFrame : MonoBehaviour
             SavePCD();
         }
         isProcess = false;
+    }
+    protected (int,int) ChangeScreenPosionToTexturePos(int screenX, int screenY, Texture2D texture)
+    {
+        //screen pos -> noamalize
+        float tempX = screenX / screenW;
+        float tempY = screenY / screenH;
+        int textureW = texture.width;
+        int textureH = texture.height;
+        int posX = (int)(textureW * tempX);
+        int posY = (int)(textureH * tempY);
+        return (posX, posY);
     }
     protected void SavePCD()
     {
