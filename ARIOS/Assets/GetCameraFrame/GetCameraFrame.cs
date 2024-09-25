@@ -80,7 +80,7 @@ public class GetCameraFrame : MonoBehaviour
                         inputRect = new RectInt(0, 0, image.width, image.height),
                         outputDimensions = new Vector2Int(image.width, image.height),
                         outputFormat = TextureFormat.RGB24,
-                        transformation = XRCpuImage.Transformation.None
+                        transformation = XRCpuImage.Transformation.MirrorX
                     };
 
 
@@ -214,8 +214,8 @@ public class GetCameraFrame : MonoBehaviour
 
             using (BinaryWriter writer = new BinaryWriter(File.Open(pcdPath, FileMode.Create)))
             {
-                //writer.Write(pcdList.Count);
-                foreach(Vector3 point in pcdList)
+                writer.Write(pcdList.Count);
+                foreach (Vector3 point in pcdList)
                 {
                     writer.Write(point.x);
                     writer.Write(point.y);
@@ -224,8 +224,8 @@ public class GetCameraFrame : MonoBehaviour
             }
             using(BinaryWriter writer = new BinaryWriter(File.Open(camPath,FileMode.Create)))
             {
-                //writer.Write(cameraPathList.Count);
-                foreach(Vector3 point in cameraPathList)
+                writer.Write(cameraPathList.Count);
+                foreach (Vector3 point in cameraPathList)
                 {
                     writer.Write(point.x);
                     writer.Write(point.y);
@@ -234,6 +234,7 @@ public class GetCameraFrame : MonoBehaviour
             }
             using (BinaryWriter writer = new BinaryWriter(File.Open(colorPath,FileMode.Create)))
             {
+                writer.Write(colorList.Count);
                 foreach(Color color in colorList)
                 {
                     writer.Write(color.r);
