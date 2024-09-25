@@ -34,10 +34,11 @@ public class GetCameraFrame : MonoBehaviour
     protected List<Vector3> cameraPathList = new List<Vector3>();
     protected List<Color> colorList = new List<Color>();
     protected int saveCnt = 0;
-    protected int maxCnt = 200000;
+    protected int maxCnt = 100000;
     //아이패드 screen 해상도 2388, 1688
     void Start()
     {
+        saveCnt = 0;
         if (arCamera == null)
         {
             arCamera = Camera.main;
@@ -79,7 +80,7 @@ public class GetCameraFrame : MonoBehaviour
                         inputRect = new RectInt(0, 0, image.width, image.height),
                         outputDimensions = new Vector2Int(image.width, image.height),
                         outputFormat = TextureFormat.RGB24,
-                        transformation = XRCpuImage.Transformation.MirrorX
+                        transformation = XRCpuImage.Transformation.None
                     };
 
 
@@ -240,6 +241,7 @@ public class GetCameraFrame : MonoBehaviour
                     writer.Write(color.b);
                 }
             }
+            saveCnt += 1;
             pcdList.Clear();
             cameraPathList.Clear();
             colorList.Clear();
