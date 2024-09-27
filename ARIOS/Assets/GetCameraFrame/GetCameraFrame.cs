@@ -140,7 +140,7 @@ public class GetCameraFrame : MonoBehaviour
                         int y = (int)screenPos.y;
                         if(cameraTexture == null)
                         {
-                            Color pcdColor = Color.magenta;
+                            Color pcdColor = Color.cyan;
                             colorList.Add(pcdColor);
                         }
                         else
@@ -176,7 +176,7 @@ public class GetCameraFrame : MonoBehaviour
                         int y = (int)screenPos.y;
                         if(cameraTexture == null)
                         {
-                            Color pcdColor = Color.magenta;
+                            Color pcdColor = Color.cyan;
                             colorList.Add(pcdColor);
                         }
                         else
