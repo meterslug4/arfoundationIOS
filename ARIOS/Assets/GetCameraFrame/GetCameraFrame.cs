@@ -128,9 +128,9 @@ public class GetCameraFrame : MonoBehaviour
             {
                 if(pointCloud.positions.HasValue)
                 {
-                    pcdList.AddRange(pointCloud.positions.Value);
+                    //pcdList.AddRange(pointCloud.positions.Value);
                     tempPcdList.Clear();
-                    tempPcdList.AddRange(pointCloud.positions.Value);
+                    tempPcdList.AddRange(pointCloud.positions.Value); //현재 읽어온것을 임시로 받아옴
                     cameraPathList.Add(arCamera.transform.position);
                     
                    for(int i=0; i<tempPcdList.Count;i++)
@@ -140,8 +140,8 @@ public class GetCameraFrame : MonoBehaviour
                         int y = (int)screenPos.y;
                         if(cameraTexture == null)
                         {
-                            Color pcdColor = Color.cyan;
-                            colorList.Add(pcdColor);
+                            //Color pcdColor = Color.cyan;
+                            //colorList.Add(pcdColor);
                         }
                         else
                         {
@@ -151,12 +151,13 @@ public class GetCameraFrame : MonoBehaviour
                             {
                                 Color pcdColor = cameraTexture.GetPixel(pos.Item1, pos.Item2);
                                 colorList.Add(pcdColor);
+                                pcdList.Add(tempPcdList[i]);
                             }
-                            else
-                            {
-                                Color pcdColor = Color.magenta;
-                                colorList.Add(pcdColor);
-                            }
+                            //else
+                            //{
+                            //    Color pcdColor = Color.magenta;
+                            //    colorList.Add(pcdColor);
+                            //}
                         }
                     }
                 }
@@ -165,7 +166,7 @@ public class GetCameraFrame : MonoBehaviour
             {
                 if(pointCloud.positions.HasValue)
                 {
-                    pcdList.AddRange(pointCloud.positions.Value);
+                    //pcdList.AddRange(pointCloud.positions.Value);
                     tempPcdList.Clear();
                     tempPcdList.AddRange(pointCloud.positions.Value);
                     cameraPathList.Add(arCamera.transform.position);
@@ -176,8 +177,8 @@ public class GetCameraFrame : MonoBehaviour
                         int y = (int)screenPos.y;
                         if(cameraTexture == null)
                         {
-                            Color pcdColor = Color.cyan;
-                            colorList.Add(pcdColor);
+                            //Color pcdColor = Color.cyan;
+                            //colorList.Add(pcdColor);
                         }
                         else
                         {
@@ -186,13 +187,14 @@ public class GetCameraFrame : MonoBehaviour
                                 && pos.Item2 >= 0 && pos.Item2 < cameraTexture.height)
                             {
                                 Color pcdColor = cameraTexture.GetPixel(pos.Item1, pos.Item2);
+                                pcdList.Add(tempPcdList[i]);
                                 colorList.Add(pcdColor);
                             }
-                            else
-                            {
-                                Color pcdColor = Color.magenta;
-                                colorList.Add(pcdColor);
-                            }
+                            //else
+                            //{
+                            //    Color pcdColor = Color.magenta;
+                            //    colorList.Add(pcdColor);
+                            //}
                         }
                     }
                 }
