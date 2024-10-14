@@ -38,6 +38,12 @@ public class ImageTrackBase : MonoBehaviour
             firstPos = v.transform.position;
             Vector3 tempPos = new Vector3(firstPos.x, 0, firstPos.z);
             nodePivot.transform.position = tempPos;
+            //rotation 처리 필요
+            //nodePivot의 Y값을 XrOrigin 카메라의 Y축값으로 변경한다
+            float tempY = v.transform.rotation.eulerAngles.y;
+            Vector3 targetRot = nodePivot.transform.eulerAngles;
+            targetRot.y = tempY;
+            nodePivot.transform.eulerAngles = targetRot;
         }
     }
 }
