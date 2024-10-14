@@ -76,4 +76,8 @@ public class NavAgent : MonoBehaviour
             naviDemo.startNode = other.GetComponent<Node>();
         }
     }
+    public void SyncTransform(Camera camera)
+    {
+        //camera ¿÷¿ª∂ß
+    }
 }

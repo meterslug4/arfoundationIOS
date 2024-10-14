@@ -6,8 +6,10 @@ using TMPro;
 public class UIController : MonoBehaviour
 {
     public Image InfoImage;
-    public TMP_Text infoText;
+    public TMP_Text infoText; //알림 역할 메세지
+    public TMP_Text imageInfoText; //이미지 인식 디버깅요 메세지
     protected string infoMsg;
+    protected string imgInfoMsg;
     void Start()
     {
         InfoImage.gameObject.SetActive(false);
@@ -20,6 +22,11 @@ public class UIController : MonoBehaviour
     {
         InfoImage.gameObject.SetActive(on);
         infoText.text = infoMsg;
+    }
+    public void SetImgInfoMsg(string msg)
+    {
+        imgInfoMsg = msg;
+        imageInfoText.text = imgInfoMsg;
     }
 
     void Update()
