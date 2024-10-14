@@ -78,6 +78,6 @@ public class NavAgent : MonoBehaviour
     }
     public void SyncTransform(Camera camera)
     {
-        //camera ¿÷¿ª∂ß
+        
     }
 }

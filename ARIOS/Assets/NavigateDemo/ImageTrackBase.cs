@@ -14,24 +14,13 @@ public class ImageTrackBase : MonoBehaviour
     protected bool findImg = false;
     protected GameObject firstObj;
     protected GameObject updateObj;
-    protected string firstPosInfo = string.Empty;
-    protected string updatePosInfo = string.Empty;
+    public GameObject nodePivot;
     void Start()
     {
-        firstObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        firstObj.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-        firstObj.transform.position = new Vector3(100, 100, 100);
-        updateObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        updateObj.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-        updateObj.transform.position = new Vector3(100, 100, 100);
-
         SetImageManager();
     }
     private void Update()
     {
-        string msg = string.Format("added Pos {0} updated Pos {1} cameraPos {2}",
-            firstPosInfo, updatePosInfo,arCam.transform.position);
-        uiController.SetImgInfoMsg(msg);
     }
     public void SetImageManager()
     {
@@ -47,14 +36,8 @@ public class ImageTrackBase : MonoBehaviour
         foreach(var v in eventArgs.added)
         {
             firstPos = v.transform.position;
-            firstPosInfo = firstPos.ToString();
-            firstObj.transform.position = firstPos;
-        }
-        foreach(var v in eventArgs.updated)
-        {
-            updatePos = v.transform.position;
-            updatePosInfo = updatePos.ToString();
-            updateObj.transform.position = updatePos;
+            Vector3 tempPos = new Vector3(firstPos.x, 0, firstPos.z);
+            nodePivot.transform.position = tempPos;
         }
     }
 }
